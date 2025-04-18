@@ -1,0 +1,16 @@
+# Python 관련
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+
+# 데이터 관련
+data/
+output/
+
+
+# 파일
+augmentation/origin
+utils/useful
+old_version_main.py
