@@ -4,16 +4,37 @@ import os
 from shapely.geometry import Polygon, box
 from .base import AugmentBase
 import copy
+import random
 
 
 class Rotate(AugmentBase):
     def __init__(self):
         super().__init__()
         
-    def __call__(self, angle, padding=0):
+    def __call__(self, **kwargs):
         """
 
         """
+        
+        # define hyperparameter
+        angles = kwargs['angle']
+        padding = kwargs.get('padding', 0)
+        
+        if len(angles) == 1:
+            angle = angles[0]
+            
+        elif len(angles) == 2:
+            if angles[0] >= angles[1]:
+                f_angle = angles[1]
+                s_angle = angles[0]
+            else:
+                f_angle = angles[0]
+                s_angle = angles[1]
+            
+            angle = random.randint(f_angle, s_angle)
+        
+        else:
+            raise ValueError(f"angle value is only one or two")
         
         # Get image
         origin_img = self.image.copy()

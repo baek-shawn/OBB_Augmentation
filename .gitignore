@@ -8,9 +8,11 @@ __pycache__/
 # 데이터 관련
 data/
 output/
-
+data_collection/
 
 # 파일
 augmentation/origin
 utils/useful
 old_version_main.py
+MutihouseAndSmall데이터.txt
+split_data.py

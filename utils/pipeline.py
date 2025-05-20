@@ -1,4 +1,5 @@
 import os
+import random
 
 class AugmentationPipeline:
     def __init__(self, transforms, save_intermediate=False):
@@ -22,7 +23,7 @@ class AugmentationPipeline:
                 if hyp is None:
                     raise ValueError(f"'angle' parameter must be specified for {name} augmentation.")
             
-            result = transform(hyp)
+            result = transform(**hyps)
             
             key = list(result.keys())[0]
             data["image"] = result[key]["image"]
@@ -38,8 +39,10 @@ class AugmentationPipeline:
         return data
 
     def _save(self, data, history, transform, mode='final'):
+        
+        idx = random.randint(0, 100000) 
         postfix = "_".join(history)
-        save_image_name = f"{data['image_name']}_{postfix}"
+        save_image_name = f"{data['image_name']}_{postfix}_{idx}"
         
         img_save_dir = os.path.join(data["save_dirs"], mode, "images")
         xywhr_save_dir = os.path.join(data["save_dirs"], mode, "xywhr")

@@ -6,7 +6,7 @@ from shapely.geometry import Polygon, box
 import copy
 import random
 from .base import AugmentBase
-
+import random
 
 
 
@@ -14,10 +14,20 @@ class RandomCrop(AugmentBase):
     def __init__(self):
         super().__init__()
     
-    def __call__(self, scale, padding=0):
+    def __call__(self, **kwargs):
+        
+        # define hyperparameter
+        scale = kwargs['scale']
+        padding = kwargs.get('padding', 0)
+        # crop_options = ['top_left','top_right', 'bottom_left', 'bottom_right', 'random']
+        
+        # choose scale value
+        if len(scale) > 1:
+            scale = random.choice(scale)
+        else:
+            scale = scale[0]
         
         assert 0 < scale <= 1, "scale은 (0,1] 사이여야 합니다."
-        crop_options = ['top_left','top_right', 'bottom_left', 'bottom_right', 'random']
         
         # Get image & labels
         origin_img = self.image.copy()
@@ -27,7 +37,7 @@ class RandomCrop(AugmentBase):
         # image 크롭 및 저장
         cropped_img_dict = {}
         
-        crop_mode = 'random'# random.choice(crop_options)
+        crop_mode = 'random'    # random.choice(crop_options)
         cropped_img, cropped_coordinates = self.crop_image(origin_img, scale, crop_mode)
         save_img_name = self.image_name # + f"_{idx}"
         
