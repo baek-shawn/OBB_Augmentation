@@ -35,4 +35,53 @@ def load_data(image_input, label_input, save_dir):
             "save_dirs": save_dir,
         }
 
-        yield data
+        yield data, image_name
+
+
+
+from dataclasses import dataclass, asdict
+from typing import List, Optional, Dict, Union
+import yaml
+
+@dataclass
+class RandomCropParams:
+    scale: List[float]
+
+@dataclass
+class RotateParams:
+    angle: List[int]
+    
+@dataclass
+class RandomRatioParams:
+    value: float
+
+@dataclass
+class AugmentConfig:
+    RandomCrop: Optional[RandomCropParams] = None
+    Rotate: Optional[RotateParams] = None
+    RandomRatio: Optional[RandomRatioParams] = None
+
+@dataclass
+class Config:
+    augment_info: List[AugmentConfig]
+
+
+
+def load_config(yaml_path: str) -> List[dict]:
+    with open(yaml_path, 'r') as f:
+        data = yaml.safe_load(f)
+
+    augment_info = []
+    for aug_dict in data['augment_info']:
+        kwargs = {}
+        if 'RandomCrop' in aug_dict:
+            kwargs['RandomCrop'] = RandomCropParams(**aug_dict['RandomCrop'])
+        if 'Rotate' in aug_dict:
+            kwargs['Rotate'] = RotateParams(**aug_dict['Rotate'])
+        if 'RandomRatio' in aug_dict:
+            kwargs['RandomRatio'] = RandomRatioParams(**aug_dict['RandomRatio'])
+
+        # dataclass → dict 변환
+        augment_info.append(asdict(AugmentConfig(**kwargs)))
+
+    return augment_info
