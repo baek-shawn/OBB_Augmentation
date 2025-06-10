@@ -9,6 +9,7 @@ __pycache__/
 data/
 output/
 data_collection/
+aug_params/
 
 # 파일
 augmentation/origin
@@ -17,3 +18,5 @@ old_version_main.py
 MutihouseAndSmall데이터.txt
 split_data.py
 collect_data.py
+select_data.txt
+run.sh

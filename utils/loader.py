@@ -52,19 +52,33 @@ class RotateParams:
     angle: List[int]
     
 @dataclass
+class ScaleParams:
+    scale: List[List]
+
+@dataclass
+class TranslateParams:
+    ratio: List[List]
+
+@dataclass
 class RandomRatioParams:
     value: float
 
 @dataclass
-class AugmentConfig:
-    RandomCrop: Optional[RandomCropParams] = None
-    Rotate: Optional[RotateParams] = None
-    RandomRatio: Optional[RandomRatioParams] = None
+class SelectModeParams:
+    value: bool
 
-@dataclass
-class Config:
-    augment_info: List[AugmentConfig]
+# @dataclass
+# class AugmentConfig:
+#     RandomCrop: Optional[RandomCropParams] = None
+#     Rotate: Optional[RotateParams] = None
+#     Scaling: Optional[ScaleParams] = None
+#     Translate: Optional[TranslateParams] = None
+#     RandomRatio: Optional[RandomRatioParams] = None
+#     SelectMode : Optional[SelectModeParams] = None
 
+# @dataclass
+# class Config:
+#     augment_info: List[AugmentConfig]
 
 
 def load_config(yaml_path: str) -> List[dict]:
@@ -74,14 +88,25 @@ def load_config(yaml_path: str) -> List[dict]:
     augment_info = []
     for aug_dict in data['augment_info']:
         kwargs = {}
-        if 'RandomCrop' in aug_dict:
-            kwargs['RandomCrop'] = RandomCropParams(**aug_dict['RandomCrop'])
-        if 'Rotate' in aug_dict:
-            kwargs['Rotate'] = RotateParams(**aug_dict['Rotate'])
-        if 'RandomRatio' in aug_dict:
-            kwargs['RandomRatio'] = RandomRatioParams(**aug_dict['RandomRatio'])
-
+        for aug_name, params in aug_dict.items():
+            if aug_name == 'RandomCrop':
+                kwargs['RandomCrop'] = asdict(RandomCropParams(**aug_dict['RandomCrop']))
+            elif aug_name == 'Rotate':
+                kwargs['Rotate'] = asdict(RotateParams(**aug_dict['Rotate']))
+            elif aug_name == 'Scaling':
+                kwargs['Scaling'] = asdict(ScaleParams(**aug_dict['Scaling']))  
+            elif aug_name == 'Translate':
+                kwargs['Translate'] = asdict(TranslateParams(**aug_dict['Translate']))
+            elif aug_name == 'RandomRatio':
+                kwargs['RandomRatio'] = asdict(RandomRatioParams(**aug_dict['RandomRatio']))
+            elif aug_name == 'SelectMode':
+                kwargs['SelectMode'] = asdict(SelectModeParams(**aug_dict['SelectMode']))
+            else:
+                raise ValueError(f"Unknown augmentation: {aug_name}")
+       
         # dataclass → dict 변환
-        augment_info.append(asdict(AugmentConfig(**kwargs)))
-
+        # augment_info.append(asdict(AugmentConfig(**kwargs)))
+        augment_info.append(kwargs)
+    
+    
     return augment_info

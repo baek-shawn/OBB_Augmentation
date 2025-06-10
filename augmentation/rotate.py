@@ -52,7 +52,6 @@ class Rotate(AugmentBase):
         
         # Rotation Process
         rotation_info_dict = {}
-        # for idx in range(self.iter_num):
         rotate_matrix = cv2.getRotationMatrix2D((padded_cx, padded_cy), angle, 1.0) # Generate Rotation Matrix 
         rotated_image = cv2.warpAffine(padded_img, rotate_matrix, (padded_img_w, padded_img_h))   # Rotate image
         save_img_name = self.image_name # + f"_{idx}"

@@ -12,7 +12,6 @@ class AugmentationPipeline:
         
         for idx, (name, transform, hyps) in enumerate(self.transforms):
             transform.set_data(data)
-            
             if name == "RandomCrop":
                 if hyps is None:
                     continue
@@ -25,10 +24,25 @@ class AugmentationPipeline:
                 hyp = hyps.get('angle', None)
                 if hyp is None:
                     raise ValueError(f"'angle' parameter must be specified for {name} augmentation.")
+            elif name == "Scaling":
+                if hyps is None:
+                    continue
+                hyp = hyps.get('scale', None)
+                if hyp is None:
+                    raise ValueError(f"'scale' parameter must be specified for {name} augmentation.")
+            elif name == "Translate":
+                if hyps is None:
+                    continue
+                hyp = hyps.get('ratio', None)
+                if hyp is None:
+                    raise ValueError(f"'ratio' parameter must be specified for {name} augmentation.")
+                
             
             result = transform(**hyps)
             
             key = list(result.keys())[0]
+            
+            # overlap the results
             data["image"] = result[key]["image"]
             data["labels"] = result[key]["xyxyxyxy"]
             data["image_name"] = key
