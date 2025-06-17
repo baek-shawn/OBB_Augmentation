@@ -30,24 +30,25 @@ class Scaling(AugmentBase):
         assert 0 < scale_x and 0 < scale_y, "scale value is always bigger than 0."
         
         # Load image
-        origin_img = self.image.copy()
-        origin_img_h, origin_img_w = origin_img.shape[:2]
-        obbs = copy.deepcopy(self.oriented_bounding_boxes)
-
-        # Scaling Process
         scaled_info_dict = {}
-        scale_matrix = self.get_scaling_affine_matrix(scale_x, scale_y, origin_img_h, origin_img_w)
-        scale_img = cv2.warpAffine(origin_img, scale_matrix, (origin_img_w, origin_img_h), flags=cv2.INTER_LINEAR)
-        save_img_name = self.image_name
-        
-        scaled_xywha, scaled_xyxyxyxy = self.scale_obb(obbs, scale_img, scale_matrix)
-        
-        if save_img_name not in scaled_info_dict:
-            scaled_info_dict[save_img_name] = {
-                "image" : scale_img,
-                "xyxyxyxy" : scaled_xyxyxyxy,
-                "xywha" : scaled_xywha
-            }
+        for idx, (img, oriented_bboxes, img_name) in enumerate(zip(self.image, self.oriented_bounding_boxes, self.image_name)):
+            origin_img = img.copy()
+            origin_img_h, origin_img_w = origin_img.shape[:2]
+            obbs = copy.deepcopy(oriented_bboxes)
+
+            # Scaling Process
+            scale_matrix = self.get_scaling_affine_matrix(scale_x, scale_y, origin_img_h, origin_img_w)
+            scale_img = cv2.warpAffine(origin_img, scale_matrix, (origin_img_w, origin_img_h), flags=cv2.INTER_LINEAR)
+            
+            
+            scaled_xywha, scaled_xyxyxyxy = self.scale_obb(obbs, scale_img, scale_matrix)
+            
+            if img_name not in scaled_info_dict:
+                scaled_info_dict[img_name] = {
+                    "image" : scale_img,
+                    "xyxyxyxy" : scaled_xyxyxyxy,
+                    "xywha" : scaled_xywha
+                }
             
         return scaled_info_dict
         

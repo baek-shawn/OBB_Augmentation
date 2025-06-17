@@ -159,14 +159,14 @@ class AugmentBase:
             print(f"❌ 오류 발생: {e}")
             return None
         
-    def _should_skip_box(self, area_ratio, threshold=0.4):
+    def _should_skip_box(self, area_ratio, threshold=0.2):
         """박스를 건너뛰어야 하는지 판단"""
         return area_ratio < threshold
         
     def save_img(self, save_dir, img_name, info):
         img_name = img_name + '.png'
         img_path = os.path.join(save_dir, img_name)
-        image = copy.deepcopy(info["image"])
+        image = copy.deepcopy(info)
         cv2.imwrite(img_path, image)
         print(f"✅ Augmentation 이미지 저장: {img_path}")    
     
@@ -187,7 +187,7 @@ class AugmentBase:
         img_name = img_name+".txt"
         xyxyxyxy_path = os.path.join(save_dir, img_name)
         with open(xyxyxyxy_path, "w") as f:
-            for cls, xyxyxyxy in info['labels']:
+            for cls, xyxyxyxy in info:
                 x1,x2,x3,x4 = xyxyxyxy[0]/img_w, xyxyxyxy[2]/img_w, xyxyxyxy[4]/img_w, xyxyxyxy[6]/img_w
                 y1,y2,y3,y4 = xyxyxyxy[1]/img_h, xyxyxyxy[3]/img_h, xyxyxyxy[5]/img_h, xyxyxyxy[7]/img_h
                 f.write(f"{int(cls)} {x1:.6f} {y1:.6f} {x2:.6f} {y2:.6f} {x3:.6f} {y3:.6f} {x4:.6f} {y4:.6f}\n")
@@ -195,12 +195,12 @@ class AugmentBase:
         print(f"✅ Augmentation xyxyxyxy 라벨 저장: {xyxyxyxy_path}")
     
     
-    def visualize(self, save_dir, img_name, info):
+    def visualize(self, save_dir, img_name, img, label):
         """회전된 OBB 시각화"""
         img_name = img_name+".png"
         visualize_path = os.path.join(save_dir, img_name)
-        image = copy.deepcopy(info['image'])
-        corners = info['labels']
+        image = copy.deepcopy(img)
+        corners = label
         for idx, corner in enumerate(corners):
             points = corner[1].reshape(4, 2).astype(np.int32).reshape((-1, 1, 2))
             cv2.polylines(image, [points], isClosed=True, color=(0, 255, 0), thickness=2)

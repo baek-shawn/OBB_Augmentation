@@ -25,29 +25,31 @@ class Translation(AugmentBase):
 
         tx_frac, ty_frac = translate[0], translate[1]
 
-        origin_img = self.image.copy()
-        origin_img_h, origin_img_w = origin_img.shape[:2]
-        obbs = copy.deepcopy(self.oriented_bounding_boxes)
-
-        # 실제 pixel 단위로 변환
-        tx = tx_frac * origin_img_w
-        ty = ty_frac * origin_img_h
-
-        # Affine matrix
-        translate_matrix = self.get_translation_affine_matrix(tx, ty)
-
         translated_info_dict = {}
-        trans_img = cv2.warpAffine(origin_img, translate_matrix, (origin_img_w, origin_img_h), flags=cv2.INTER_LINEAR)
+        for idx, (img, oriented_bboxes, img_name) in enumerate(zip(self.image, self.oriented_bounding_boxes, self.image_name)):
+            origin_img = img.copy()
+            origin_img_h, origin_img_w = origin_img.shape[:2]
+            obbs = copy.deepcopy(oriented_bboxes)
 
-        save_img_name = self.image_name
-        trans_xywha, trans_xyxyxyxy = self.translate_obb(obbs, trans_img, translate_matrix)
+            # 실제 pixel 단위로 변환
+            tx = tx_frac * origin_img_w
+            ty = ty_frac * origin_img_h
 
-        if save_img_name not in translated_info_dict:
-            translated_info_dict[save_img_name] = {
-                "image": trans_img,
-                "xyxyxyxy": trans_xyxyxyxy,
-                "xywha": trans_xywha
-            }
+            # Affine matrix
+            translate_matrix = self.get_translation_affine_matrix(tx, ty)
+
+            
+            trans_img = cv2.warpAffine(origin_img, translate_matrix, (origin_img_w, origin_img_h), flags=cv2.INTER_LINEAR)
+
+            
+            trans_xywha, trans_xyxyxyxy = self.translate_obb(obbs, trans_img, translate_matrix)
+
+            if img_name not in translated_info_dict:
+                translated_info_dict[img_name] = {
+                    "image": trans_img,
+                    "xyxyxyxy": trans_xyxyxyxy,
+                    "xywha": trans_xywha
+                }
 
         return translated_info_dict
 

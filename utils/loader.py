@@ -29,9 +29,9 @@ def load_data(image_input, label_input, save_dir):
         obbs = np.array(obbs)
 
         data = {
-            "image": image,
-            "labels": obbs,
-            "image_name": image_name,
+            "image": [image],
+            "labels": [obbs],
+            "image_name": [image_name],
             "save_dirs": save_dir,
         }
 
@@ -40,7 +40,7 @@ def load_data(image_input, label_input, save_dir):
 
 
 from dataclasses import dataclass, asdict
-from typing import List, Optional, Dict, Union
+from typing import List, Optional, Literal
 import yaml
 
 @dataclass
@@ -67,18 +67,13 @@ class RandomRatioParams:
 class SelectModeParams:
     value: bool
 
-# @dataclass
-# class AugmentConfig:
-#     RandomCrop: Optional[RandomCropParams] = None
-#     Rotate: Optional[RotateParams] = None
-#     Scaling: Optional[ScaleParams] = None
-#     Translate: Optional[TranslateParams] = None
-#     RandomRatio: Optional[RandomRatioParams] = None
-#     SelectMode : Optional[SelectModeParams] = None
+@dataclass
+class TileParams:
+    scale: List[List]  # 필수 입력
+    overlap_ratio: Optional[float] = None
+    fix_mode: Optional[Literal['fix', 'dynamic']] = None 
+    model_size: Optional[int] = None
 
-# @dataclass
-# class Config:
-#     augment_info: List[AugmentConfig]
 
 
 def load_config(yaml_path: str) -> List[dict]:
@@ -101,6 +96,8 @@ def load_config(yaml_path: str) -> List[dict]:
                 kwargs['RandomRatio'] = asdict(RandomRatioParams(**aug_dict['RandomRatio']))
             elif aug_name == 'SelectMode':
                 kwargs['SelectMode'] = asdict(SelectModeParams(**aug_dict['SelectMode']))
+            elif aug_name == 'Tile':
+                kwargs['Tile'] = asdict(TileParams(**aug_dict['Tile']))
             else:
                 raise ValueError(f"Unknown augmentation: {aug_name}")
        

@@ -12,6 +12,7 @@ class AugmentationPipeline:
         
         for idx, (name, transform, hyps) in enumerate(self.transforms):
             transform.set_data(data)
+    
             if name == "RandomCrop":
                 if hyps is None:
                     continue
@@ -36,16 +37,29 @@ class AugmentationPipeline:
                 hyp = hyps.get('ratio', None)
                 if hyp is None:
                     raise ValueError(f"'ratio' parameter must be specified for {name} augmentation.")
+            elif name == "Tile":
+                if hyps is None:
+                    continue
+                hyp = hyps.get('scale', None)
+                if hyp is None:
+                    raise ValueError(f"'scale' parameter must be specified for {name} augmentation.")
                 
             
             result = transform(**hyps)
             
-            key = list(result.keys())[0]
-            
             # overlap the results
-            data["image"] = result[key]["image"]
-            data["labels"] = result[key]["xyxyxyxy"]
-            data["image_name"] = key
+            img_names = list(result.keys())
+            img_list = []
+            labels = []
+            image_name_list = []
+            for img_name in img_names:
+                img_list.append(result[img_name]['image'])
+                labels.append(result[img_name]['xyxyxyxy'])
+                image_name_list.append(img_name)
+            data["image"] = img_list
+            data["labels"] = labels
+            data["image_name"] = image_name_list
+           
 
             history.append(name)
 
@@ -57,9 +71,6 @@ class AugmentationPipeline:
 
     def _save(self, data, history, transform, mode='final', visualize=True):
         
-        idx = random.randint(0, 100000) 
-        postfix = "_".join(history)
-        save_image_name = f"{data['image_name']}_{postfix}_{idx}"
         
         img_save_dir = os.path.join(data["save_dirs"], mode, "images")
         xywhr_save_dir = os.path.join(data["save_dirs"], mode, "xywhr")
@@ -69,7 +80,12 @@ class AugmentationPipeline:
         for folder in [img_save_dir, xywhr_save_dir, xyxyxyxy_save_dir, visualize_save_dir]:
             os.makedirs(folder, exist_ok=True)
         
-        transform.save_img(img_save_dir, save_image_name, data)
-        transform.save_xyxyxyxy(xyxyxyxy_save_dir, save_image_name, data, data['image'].shape[1], data['image'].shape[0])
-        if visualize:
-            transform.visualize(visualize_save_dir, save_image_name, data)
+        for img, label, img_name in zip(data['image'], data['labels'], data['image_name']):
+        
+            idx = random.randint(0, 100000) 
+            postfix = "_".join(history)
+            save_image_name = f"{img_name}_{postfix}_{idx}"
+            transform.save_img(img_save_dir, save_image_name, img)
+            transform.save_xyxyxyxy(xyxyxyxy_save_dir, save_image_name, label, img.shape[1], img.shape[0])
+            if visualize:
+                transform.visualize(visualize_save_dir, save_image_name, img, label)

@@ -30,36 +30,24 @@ class RandomCrop(AugmentBase):
         assert 0 < scale <= 1, "scale은 (0,1] 사이여야 합니다."
         
         # Get image & labels
-        origin_img = self.image.copy()
-        origin_img_h, origin_img_w = origin_img.shape[:2]
-        obbs = copy.deepcopy(self.oriented_bounding_boxes)
-       
-        # image 크롭 및 저장
         cropped_img_dict = {}
+        for idx, (img, oriented_bboxes, img_name) in enumerate(zip(self.image, self.oriented_bounding_boxes, self.image_name)):
+            origin_img = img.copy()
+            origin_img_h, origin_img_w = origin_img.shape[:2]
+            obbs = copy.deepcopy(oriented_bboxes)
         
-        crop_mode = 'random'    # random.choice(crop_options)
-        cropped_img, cropped_coordinates = self.crop_image(origin_img, scale, crop_mode)
-        save_img_name = self.image_name # + f"_{idx}"
-        
-        cropped_xyxyxyxy = self.process_obbs_for_crop(cropped_coordinates, obbs)
-    
-        if save_img_name not in cropped_img_dict:
-            cropped_img_dict[save_img_name] = {
-                "image" : cropped_img,
-                "xyxyxyxy" : cropped_xyxyxyxy
-            }
-                
-        # save data & visualize
-        # for img_name, info in cropped_img_dict.items():
-        #     img_h, img_w = info['image'].shape[:2] 
-        #     mode = 'crop'
-        #     # save image
-        #     self.save_img(img_name, info, mode)
-        #     # save xyxyxyxy format
-        #     self.save_xyxyxyxy(img_name, info, img_w, img_h, mode)
-        #     # visualize
-        #     self.visualize(img_name, info, mode)
+            # image 크롭 및 저장
+            crop_mode = 'random'    # random.choice(crop_options)
+            cropped_img, cropped_coordinates = self.crop_image(origin_img, scale, crop_mode)
             
+            cropped_xyxyxyxy = self.process_obbs_for_crop(cropped_coordinates, obbs)
+        
+            if img_name not in cropped_img_dict:
+                cropped_img_dict[img_name] = {
+                    "image" : cropped_img,
+                    "xyxyxyxy" : cropped_xyxyxyxy
+                }
+         
         return cropped_img_dict
                     
         

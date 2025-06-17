@@ -37,46 +37,35 @@ class Rotate(AugmentBase):
             raise ValueError(f"angle value is only one or two")
         
         # Get image
-        origin_img = self.image.copy()
-        origin_img_h, origin_img_w = origin_img.shape[:2]
-        
-        # Use padding to overcome the OBB coordinates are outside the image in rotation.
-        padded_img, padded_img_h, padded_img_w = self.padding_img(origin_img, padding)
-        padded_cx, padded_cy = padded_img_w // 2, padded_img_h // 2  # 회전 중심
-        
-    
-        # Use padding to obbs
-        
-        obbs = copy.deepcopy(self.oriented_bounding_boxes)
-        padding_label = self.padding_label(obbs)
-        
-        # Rotation Process
         rotation_info_dict = {}
-        rotate_matrix = cv2.getRotationMatrix2D((padded_cx, padded_cy), angle, 1.0) # Generate Rotation Matrix 
-        rotated_image = cv2.warpAffine(padded_img, rotate_matrix, (padded_img_w, padded_img_h))   # Rotate image
-        save_img_name = self.image_name # + f"_{idx}"
-        # 회전된 OBB 계산
-        rotated_xywha, rotated_xyxyxy = self.rotate_obb(padding_label, angle, padded_img_w, padded_img_h, rotate_matrix)
+        for idx, (img, oriented_bboxes, img_name) in enumerate(zip(self.image, self.oriented_bounding_boxes, self.image_name)):
+            origin_img = img.copy()
+            origin_img_h, origin_img_w = origin_img.shape[:2]
+            
+            # Use padding to overcome the OBB coordinates are outside the image in rotation.
+            padded_img, padded_img_h, padded_img_w = self.padding_img(origin_img, padding)
+            padded_cx, padded_cy = padded_img_w // 2, padded_img_h // 2  # 회전 중심
+            
         
-        if save_img_name not in rotation_info_dict:
-            rotation_info_dict[save_img_name] = {
-                "image" : rotated_image,
-                "xyxyxyxy" : rotated_xyxyxy,
-                "xywha" : rotated_xywha 
-            }
-                
-        # save data & visualize
-        # for img_name, info in rotation_info_dict.items():
-        #     mode = 'rotate'
-        #     # save image
-        #     self.save_img(img_name, info, mode)
-        #     # save xywhr format
-        #     self.save_xywhr(img_name, info, mode)
-        #     # save xyxyxyxy format
-        #     self.save_xyxyxyxy(img_name, info, padded_img_w, padded_img_h, mode)
-        #     # visualize
-        #     self.visualize(img_name, info, mode)
-                
+            # Use padding to obbs
+            obbs = copy.deepcopy(oriented_bboxes)
+            padding_label = self.padding_label(obbs)
+            
+            # Rotation Process
+            
+            rotate_matrix = cv2.getRotationMatrix2D((padded_cx, padded_cy), angle, 1.0) # Generate Rotation Matrix 
+            rotated_image = cv2.warpAffine(padded_img, rotate_matrix, (padded_img_w, padded_img_h))   # Rotate image
+            
+            # 회전된 OBB 계산
+            rotated_xywha, rotated_xyxyxy = self.rotate_obb(padding_label, angle, padded_img_w, padded_img_h, rotate_matrix)
+            
+            if img_name not in rotation_info_dict:
+                rotation_info_dict[img_name] = {
+                    "image" : rotated_image,
+                    "xyxyxyxy" : rotated_xyxyxy,
+                    "xywha" : rotated_xywha 
+                }
+            
             
         return rotation_info_dict
             
