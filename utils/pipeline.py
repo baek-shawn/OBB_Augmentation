@@ -43,8 +43,15 @@ class AugmentationPipeline:
                 hyp = hyps.get('scale', None)
                 if hyp is None:
                     raise ValueError(f"'scale' parameter must be specified for {name} augmentation.")
+            elif name == "MultipleScale":
                 
-            
+                if hyps is None:
+                    continue
+                hyp1 = hyps.get('px_value', None)
+                hyp2 = hyps.get('ratio_value', None)
+                if hyp1 is None and hyp2 is None: 
+                    raise ValueError(f"'px_value' or 'ratio_value' parameter must be specified for {name} augmentation.")
+                
             result = transform(**hyps)
             
             # overlap the results
@@ -65,8 +72,9 @@ class AugmentationPipeline:
 
             if self.save_intermediate and idx < transform_len - 1:
                 self._save(data, history, transform, mode="intermediate")
-
+        
         self._save(data, history, transform, mode="final")
+        
         return data
 
     def _save(self, data, history, transform, mode='final', visualize=True):

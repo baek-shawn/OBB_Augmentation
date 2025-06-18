@@ -69,10 +69,16 @@ class SelectModeParams:
 
 @dataclass
 class TileParams:
-    scale: List[List]  # 필수 입력
+    scale: List[List] 
     overlap_ratio: Optional[float] = None
     fix_mode: Optional[Literal['fix', 'dynamic']] = None 
     model_size: Optional[int] = None
+
+@dataclass
+class MultipleScaleParams:
+    px_value: Optional[List[List]] = None 
+    ratio_value: Optional[List[List]] = None
+    
 
 
 
@@ -98,6 +104,8 @@ def load_config(yaml_path: str) -> List[dict]:
                 kwargs['SelectMode'] = asdict(SelectModeParams(**aug_dict['SelectMode']))
             elif aug_name == 'Tile':
                 kwargs['Tile'] = asdict(TileParams(**aug_dict['Tile']))
+            elif aug_name == "MultipleScale":
+                kwargs['MultipleScale'] = asdict(MultipleScaleParams(**aug_dict['MultipleScale']))
             else:
                 raise ValueError(f"Unknown augmentation: {aug_name}")
        

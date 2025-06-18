@@ -6,6 +6,7 @@ from augmentation.rotate import Rotate
 from augmentation.scale import Scaling
 from augmentation.translate import Translation
 from augmentation.tile import Tiling
+from augmentation.multiple_scale import Resize
 from utils.save_log import write_augment_log
 import random
 import os
@@ -43,8 +44,11 @@ def main_pipeline(root_input, root_output, yaml_path,select_path, save_intermedi
             elif method == "Tile":
                 augment = (method, Tiling(), hyps)
                 augmentation_list.append(augment)
-                
-                
+            
+            elif method == "MultipleScale":
+                augment = (method, Resize(), hyps)
+                augmentation_list.append(augment)
+        
         pipeline = AugmentationPipeline(
             transforms=augmentation_list,
             save_intermediate=save_intermediate
@@ -87,7 +91,7 @@ def main_pipeline(root_input, root_output, yaml_path,select_path, save_intermedi
             
             pipeline(data)
             
-            break
+            
         
         print(f"{new_root_output} works finish")
         print("==============================")
